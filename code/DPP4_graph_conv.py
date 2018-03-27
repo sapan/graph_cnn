@@ -28,7 +28,7 @@ from matplotlib import pyplot as plt
 from matplotlib.font_manager import FontProperties
 import seaborn as sns
 
-import cPickle as pickle
+import pickle
 
 seed_val = 1984
 np.random.seed(seed_val) # for reproducibility
@@ -86,7 +86,6 @@ print('Test data shape:(%d,%d)'%(X_test.shape))
 corr_mat = np.array(normalize(np.abs(np.corrcoef(X_train.transpose())), 
                               norm='l1', axis=1),dtype='float64')
 graph_mat = np.argsort(corr_mat,1)[:,-num_neighbors:]
-
 # %%
 
 ### 1 layer graph CNN
@@ -105,10 +104,11 @@ g_model.compile(loss='mean_squared_error', optimizer='adam')
 
 results['g'] = []
 for i in range(epochs):
+    print("sapan")
     g_model.fit(X_train.reshape(X_train.shape[0],X_train.shape[1],1), y_train,
               epochs=1,
               batch_size=batch_size,
-              verbose = 0,)
+              verbose = 1)
 
     y_pred = g_model.predict(X_test.reshape(X_test.shape[0],X_test.shape[1],1), 
                              batch_size=100).flatten()
@@ -139,11 +139,11 @@ g_fc_model.compile(loss='mean_squared_error', optimizer='adam')
 
 results['g_fc'] = []
 for i in range(epochs):
-    g_fc_model.fit(X_train.reshape(X_train.shape[0],X_train.shape[1],1), 
-                   y_train,
+    g_fc_model.fit(X_test.reshape(X_test.shape[0],X_test.shape[1],1), 
+                   y_test,
                    epochs=1,
                    batch_size=batch_size,
-                   verbose = 0,)
+                   verbose = 0)
 
     y_pred = g_fc_model.predict(X_test.reshape(X_test.shape[0],X_test.shape[1],1), 
                                 batch_size=100).flatten()
