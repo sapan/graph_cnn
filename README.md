@@ -1,3 +1,7 @@
+NOTE: This repository is as is copied from 
+	https://github.com/hechtlinger/graph_cnn
+The intention is to study and inject additional constraints to improve the results.
+
 # A generalization of Convolutional Neural Networks to Graph-Structured Data
 
 This is supplementary code to "A generalization of Convolutional Neural Networks to Graph-Structured Data", by Yotam Hechtlinger, Purvasha Chakravarti and Jining Qin.
