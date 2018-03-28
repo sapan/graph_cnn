@@ -104,11 +104,10 @@ g_model.compile(loss='mean_squared_error', optimizer='adam')
 
 results['g'] = []
 for i in range(epochs):
-    print("sapan")
     g_model.fit(X_train.reshape(X_train.shape[0],X_train.shape[1],1), y_train,
               epochs=1,
               batch_size=batch_size,
-              verbose = 1)
+              verbose = 0,)
 
     y_pred = g_model.predict(X_test.reshape(X_test.shape[0],X_test.shape[1],1), 
                              batch_size=100).flatten()
@@ -143,7 +142,7 @@ for i in range(epochs):
                    y_test,
                    epochs=1,
                    batch_size=batch_size,
-                   verbose = 0)
+                   verbose = 1,)
 
     y_pred = g_fc_model.predict(X_test.reshape(X_test.shape[0],X_test.shape[1],1), 
                                 batch_size=100).flatten()
@@ -173,7 +172,7 @@ for i in range(epochs):
     fc_fc_model.fit(X_train, y_train,
               epochs=1,
               batch_size=batch_size,
-              verbose = 0,)
+              verbose = 1,)
 
     y_pred = fc_fc_model.predict(X_test, batch_size=100).flatten()
     r_squared = (np.corrcoef(y_pred,y_test)**2)[0,1]
@@ -209,7 +208,7 @@ for i in range(epochs):
                      y_train,
                      epochs=1,
                      batch_size=batch_size,
-                     verbose = 0,)
+                     verbose =1,)
 
     y_pred = g_g_fc_model.predict(X_test.reshape(X_test.shape[0],X_test.shape[1],1), batch_size=100).flatten()
     r_squared = (np.corrcoef(y_pred,y_test)**2)[0,1]
