@@ -46,7 +46,7 @@ def r_square_np(y_true, y_pred):
 
 ### Parameters
 batch_size=200
-epochs= 40
+epochs= 1
 num_neighbors= 5
 filters_1 = 10
 filters_2 = 20
@@ -54,6 +54,16 @@ num_hidden_1 = 300
 num_hidden_2 = 100
 results = dict()
 
+''' Following parameters are set for toy running
+batch_size=200
+epochs= 1
+num_neighbors=2
+filters_1 = 10
+filters_2 = 20
+num_hidden_1 = 3
+num_hidden_2 = 1
+results = dict()
+'''
 # %% 
 ### Load the data
 tr_loc = '../data/DPP4_training_disguised.csv'

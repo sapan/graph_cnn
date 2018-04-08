@@ -3,7 +3,8 @@ from keras import initializers
 from keras.engine.topology import Layer
 from keras.layers.core import *
 
-import tensorflow as tf1
+import tensorflow as tf
+#from keras.backend.cntk_backend import dtype
 
 class GraphConv(Layer):
     '''Convolution operator for graphs.
@@ -136,22 +137,25 @@ class GraphConv(Layer):
            We then gather and reshape x with the neighbor info: This is stored in x_expanded
                x_expanded = <batch, #features, #top-k_features>
         '''
-        x_s=K.expand_dims(K.squeeze(x, axis=-1), 1)
-        tiled=K.reshape(K.tile(x_s, [1,K.shape(x)[1],1]), (-1, 1))
+        x_shape=K.shape(x)
+        x_s=tf.transpose(x, perm=[0,2,1])
+        x_s=tf.expand_dims(x_s, 2)
+        tiled=tf.reshape(tf.tile(x_s, [1,1,x_shape[1],1]), (-1,1))
         
-        nei_expanded=K.tile(K.constant(self.neighbors_ix_mat), (K.shape(x)[0],1))
-        nei_expanded=K.reshape(nei_expanded, (-1,self.num_neighbors))
-        r=K.tile(K.expand_dims(K.arange(0, K.shape(x)[0]*K.shape(x)[1]), 1), [1, self.num_neighbors])
-        idx=K.reshape(r*self.num_neighbors + K.cast(nei_expanded, 'int32'), (-1,1))
+        nei_expanded=tf.tile(tf.expand_dims(tf.constant(self.neighbors_ix_mat), 0), (tf.shape(x)[0],1,1))
+        nei_expanded=tf.reshape(tf.tile(tf.expand_dims(nei_expanded, 1), [1,1,x_shape[2],1]), (-1,self.num_neighbors))
+        
+        r=tf.tile(tf.expand_dims(tf.range(0, x_shape[0]*x_shape[1]*x_shape[2]), 1), [1, self.num_neighbors])
+        idx=tf.reshape(tf.to_int64(r)*tf.to_int64(x_shape[0]) + tf.to_int64(nei_expanded), (-1,1))
 
-        x_expanded=K.reshape(K.gather(tiled, idx), (K.shape(x)[0], K.shape(x)[1], -1))
-#        x_expanded = x[:,K.cast(self.neighbors_ix_mat, 'int32'),:]
+        x_expanded=tf.gather(tiled, idx)
+        x_expanded=tf.reshape(x_expanded, (x_shape[0], x_shape[2], x_shape[1], -1))
+        x_expanded=tf.transpose(x_expanded, perm=[0,2,3,1])
+
         #Tensor dot implementation with tensorflow
-        print(x_expanded.shape)
-        print(self.kernel.shape)
-        output = tf1.tensordot(x_expanded, self.kernel, [[2],[0]])   
+        output = tf.tensordot(x_expanded, self.kernel, [[2,3],[0,1]])   
         if self.use_bias:
-            output += K.reshape(self.bias, (1, 1, self.filters))
+            output += tf.reshape(self.bias, (1, 1, self.filters))
         
         output = self.activation(output)
         return output
