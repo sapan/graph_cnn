@@ -137,22 +137,25 @@ class GraphConv(Layer):
            We then gather and reshape x with the neighbor info: This is stored in x_expanded
                x_expanded = <batch, #features, #top-k_features>
         '''
-        x_shape=K.shape(x)
-        x_s=tf.transpose(x, perm=[0,2,1])
-        x_s=tf.expand_dims(x_s, 2)
-        tiled=tf.reshape(tf.tile(x_s, [1,1,x_shape[1],1]), (-1,1))
-        
-        nei_expanded=tf.tile(tf.expand_dims(tf.constant(self.neighbors_ix_mat), 0), (tf.shape(x)[0],1,1))
-        nei_expanded=tf.reshape(tf.tile(tf.expand_dims(nei_expanded, 1), [1,1,x_shape[2],1]), (-1,self.num_neighbors))
-        
-        r=tf.tile(tf.expand_dims(tf.range(0, x_shape[0]*x_shape[1]*x_shape[2]), 1), [1, self.num_neighbors])
-        idx=tf.reshape(tf.to_int64(r)*tf.to_int64(x_shape[0]) + tf.to_int64(nei_expanded), (-1,1))
-
-        x_expanded=tf.gather(tiled, idx)
-        x_expanded=tf.reshape(x_expanded, (x_shape[0], x_shape[2], x_shape[1], -1))
-        x_expanded=tf.transpose(x_expanded, perm=[0,2,3,1])
+#        x_shape=K.shape(x)
+#        x_s=tf.transpose(x, perm=[0,2,1])
+#        x_s=tf.expand_dims(x_s, 2)
+#        tiled=tf.reshape(tf.tile(x_s, [1,1,x_shape[1],1]), (-1,1))
+#        
+#        nei_expanded=tf.tile(tf.expand_dims(tf.constant(self.neighbors_ix_mat), 0), (tf.shape(x)[0],1,1))
+#        nei_expanded=tf.reshape(tf.tile(tf.expand_dims(nei_expanded, 1), [1,1,x_shape[2],1]), (-1,self.num_neighbors))
+#        
+#        r=tf.tile(tf.expand_dims(tf.range(0, x_shape[0]*x_shape[1]*x_shape[2]), 1), [1, self.num_neighbors])
+#        idx=tf.reshape(tf.to_int64(r)*tf.to_int64(x_shape[0]) + tf.to_int64(nei_expanded), (-1,1))
+#
+#        x_expanded=tf.gather(tiled, idx)
+#        x_expanded=tf.reshape(x_expanded, (x_shape[0], x_shape[2], x_shape[1], -1))
+#        x_expanded=tf.transpose(x_expanded, perm=[0,2,3,1])
 
         #Tensor dot implementation with tensorflow
+        #print(self.neighbors_ix_mat)
+        x_expanded = tf.gather(x, self.neighbors_ix_mat, axis=1)
+        #x_expanded = x[:,self.neighbors_ix_mat,:]
         output = tf.tensordot(x_expanded, self.kernel, [[2,3],[0,1]])   
         if self.use_bias:
             output += tf.reshape(self.bias, (1, 1, self.filters))

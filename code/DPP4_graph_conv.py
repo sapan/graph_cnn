@@ -46,7 +46,7 @@ def r_square_np(y_true, y_pred):
 
 ### Parameters
 batch_size=200
-epochs= 1
+epochs= 40
 num_neighbors= 5
 filters_1 = 10
 filters_2 = 20
@@ -96,6 +96,9 @@ print('Test data shape:(%d,%d)'%(X_test.shape))
 corr_mat = np.array(normalize(np.abs(np.corrcoef(X_train.transpose())), 
                               norm='l1', axis=1),dtype='float64')
 graph_mat = np.argsort(corr_mat,1)[:,-num_neighbors:]
+
+print('graph_mat shape:(%d,%d)'%(graph_mat.shape))
+
 # %%
 
 ### 1 layer graph CNN
@@ -218,7 +221,7 @@ for i in range(epochs):
                      y_train,
                      epochs=1,
                      batch_size=batch_size,
-                     verbose =0,)
+                     verbose = 0,)
 
     y_pred = g_g_fc_model.predict(X_test.reshape(X_test.shape[0],X_test.shape[1],1), batch_size=100).flatten()
     r_squared = (np.corrcoef(y_pred,y_test)**2)[0,1]
