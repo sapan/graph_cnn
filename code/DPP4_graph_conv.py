@@ -46,7 +46,7 @@ def r_square_np(y_true, y_pred):
 
 ### Parameters
 batch_size=200
-epochs= 1
+epochs= 40
 num_neighbors= 5
 filters_1 = 10
 filters_2 = 20
