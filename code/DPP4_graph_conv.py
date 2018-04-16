@@ -96,13 +96,18 @@ print('Test data shape:(%d,%d)'%(X_test.shape))
 corr_mat = np.array(normalize(np.abs(np.corrcoef(X_train.transpose())), 
                               norm='l1', axis=1),dtype='float64')
 graph_mat = np.argsort(corr_mat,1)[:,-num_neighbors:]
+cor_graph_mat = np.sort(corr_mat,1)[:,-num_neighbors:]
+
+print('graph_mat shape:(%d,%d)'%(graph_mat.shape))
+
 # %%
 
 ### 1 layer graph CNN
 g_model = Sequential()
 g_model.add(GraphConv(filters=filters_1, neighbors_ix_mat = graph_mat, 
                       num_neighbors=num_neighbors, activation='relu', 
-                      input_shape=(X_train.shape[1],1)))
+                      input_shape=(X_train.shape[1],1),
+                      correlation_graph_mat = cor_graph_mat))
 g_model.add(Dropout(0.25))
 g_model.add(Flatten())
 g_model.add(Dense(1, kernel_regularizer=l2(0.01)))
@@ -134,7 +139,8 @@ print('1-Conv R squared = %.5f'%results['g'][-1])
 g_fc_model = Sequential()
 g_fc_model.add(GraphConv(filters=filters_1, neighbors_ix_mat = graph_mat, 
                          num_neighbors=num_neighbors, activation='relu', 
-                         input_shape=(X_train.shape[1],1)))
+                         input_shape=(X_train.shape[1],1),
+                         correlation_graph_mat = cor_graph_mat))
 g_fc_model.add(Dropout(0.25))
 g_fc_model.add(Flatten())
 g_fc_model.add(Dense(num_hidden_2, activation='relu', kernel_regularizer=l2(0.01),))
@@ -197,10 +203,12 @@ print('FC-FC R squared = %.5f'%(results['fc_fc'][-1]))
 g_g_fc_model = Sequential()
 g_g_fc_model.add(GraphConv(filters=filters_1, neighbors_ix_mat = graph_mat, 
                            num_neighbors=num_neighbors, activation='relu', 
-                           input_shape=(X_train.shape[1],1)))
+                           input_shape=(X_train.shape[1],1),
+                           correlation_graph_mat = cor_graph_mat))
 g_g_fc_model.add(Dropout(0.25))
 g_g_fc_model.add(GraphConv(filters=filters_2, neighbors_ix_mat = graph_mat, 
-                           num_neighbors=num_neighbors, activation='relu'))
+                           num_neighbors=num_neighbors, activation='relu',
+                           correlation_graph_mat = cor_graph_mat))
 g_g_fc_model.add(Dropout(0.25))
 g_g_fc_model.add(Flatten())
 g_g_fc_model.add(Dense(num_hidden_1,activation='relu', kernel_regularizer=l2(0.01),))
@@ -218,7 +226,7 @@ for i in range(epochs):
                      y_train,
                      epochs=1,
                      batch_size=batch_size,
-                     verbose =0,)
+                     verbose = 0,)
 
     y_pred = g_g_fc_model.predict(X_test.reshape(X_test.shape[0],X_test.shape[1],1), batch_size=100).flatten()
     r_squared = (np.corrcoef(y_pred,y_test)**2)[0,1]
