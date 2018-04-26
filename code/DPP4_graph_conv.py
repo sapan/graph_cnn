@@ -23,7 +23,10 @@ from graph_convolution import GraphConv
 
 import pandas as pd
 import numpy as np
+import sklearn
 from sklearn.preprocessing import normalize
+from sklearn.metrics.pairwise import euclidean_distances
+import scipy
 
 from matplotlib import pyplot as plt
 from matplotlib.font_manager import FontProperties
@@ -64,12 +67,14 @@ filters_1 = 10
 filters_2 = 20
 num_hidden_1 = 3
 num_hidden_2 = 1
+distance = 'correlation' or 'euclidiean' or 'cosine' or 'manhattan'
 results = dict()
 '''
 # %% 
 ### Load the data
 tr_loc = '../data/DPP4_training_disguised.csv'
 val_loc = '../data/DPP4_test_disguised.csv'
+distance = 'correlation'
 
 tr_data = pd.read_csv(open(tr_loc,'r'))
 val_data = pd.read_csv(open(val_loc,'r'))
@@ -94,15 +99,25 @@ X_test = (X_test / X_test.max(0))
 
 print('Test data shape:(%d,%d)'%(X_test.shape))
 
-### Prepare the Graph Correlation matrix 
-corr_mat = np.array(normalize(np.abs(np.corrcoef(X_train.transpose())), norm='l1', axis=1),dtype='float64')
+### Prepare the Graph Correlation matrix
+# http://scikit-learn.org/stable/modules/classes.html#module-sklearn.metrics.pairwise
+if(distance == 'euclidiean'):
+    corr_mat = np.array(normalize(np.abs(euclidean_distances(X_train.T,X_train.T)), norm='l1', axis=1),dtype='float64')
+elif(distance == 'correlation'):
+    corr_mat = np.array(normalize(np.abs(np.corrcoef(X_train.transpose())), norm='l1', axis=1),dtype='float64')
+elif(distance == 'cosine'):
+    corr_mat = np.array(normalize(np.abs(sklearn.metrics.pairwise.cosine_similarity(X_train.T,X_train.T)), norm='l1', axis=1),dtype='float64')
+elif(distance == 'manhattan'):
+    corr_mat = np.array(normalize(np.abs(sklearn.metrics.pairwise.manhattan_distances(X_train.T,X_train.T)), norm='l1', axis=1),dtype='float64')
+print(corr_mat.shape)
 
 # Calculate Q matrix using random walk
-P = np.add(corr_mat, np.eye(corr_mat.shape[0]))
-Q = P
+P = corr_mat
+Q = np.eye(corr_mat.shape[0])
+Q = Q + P
 for i in range(k-2):
     P = np.matmul(P,P)
-    Q = total + P
+    Q = Q + P
     
 corr_mat = Q    
 graph_mat = np.argsort(corr_mat,1)[:,-num_neighbors:]
