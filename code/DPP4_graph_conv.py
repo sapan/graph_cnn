@@ -13,6 +13,7 @@ http://pubs.acs.org/doi/suppl/10.1021/ci500747n
 ### Dependencies 
 import os
 
+from keras import backend as K
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.optimizers import adam, RMSprop
@@ -22,7 +23,10 @@ from graph_convolution import GraphConv
 
 import pandas as pd
 import numpy as np
+import sklearn
 from sklearn.preprocessing import normalize
+from sklearn.metrics.pairwise import euclidean_distances
+import scipy
 
 from matplotlib import pyplot as plt
 from matplotlib.font_manager import FontProperties
@@ -46,12 +50,13 @@ def r_square_np(y_true, y_pred):
 
 ### Parameters
 batch_size=200
-epochs= 40
+epochs= 1
 num_neighbors= 5
 filters_1 = 10
 filters_2 = 20
 num_hidden_1 = 300
 num_hidden_2 = 100
+k = 3
 results = dict()
 
 ''' Following parameters are set for toy running
@@ -62,12 +67,14 @@ filters_1 = 10
 filters_2 = 20
 num_hidden_1 = 3
 num_hidden_2 = 1
+distance = 'correlation' or 'euclidiean' or 'cosine' or 'manhattan'
 results = dict()
 '''
 # %% 
 ### Load the data
 tr_loc = '../data/DPP4_training_disguised.csv'
 val_loc = '../data/DPP4_test_disguised.csv'
+distance = 'correlation'
 
 tr_data = pd.read_csv(open(tr_loc,'r'))
 val_data = pd.read_csv(open(val_loc,'r'))
@@ -92,10 +99,29 @@ X_test = (X_test / X_test.max(0))
 
 print('Test data shape:(%d,%d)'%(X_test.shape))
 
-### Prepare the Graph Correlation matrix 
-corr_mat = np.array(normalize(np.abs(np.corrcoef(X_train.transpose())), 
-                              norm='l1', axis=1),dtype='float64')
+### Prepare the Graph Correlation matrix
+# http://scikit-learn.org/stable/modules/classes.html#module-sklearn.metrics.pairwise
+if(distance == 'euclidiean'):
+    corr_mat = np.array(normalize(np.abs(euclidean_distances(X_train.T,X_train.T)), norm='l1', axis=1),dtype='float64')
+elif(distance == 'correlation'):
+    corr_mat = np.array(normalize(np.abs(np.corrcoef(X_train.transpose())), norm='l1', axis=1),dtype='float64')
+elif(distance == 'cosine'):
+    corr_mat = np.array(normalize(np.abs(sklearn.metrics.pairwise.cosine_similarity(X_train.T,X_train.T)), norm='l1', axis=1),dtype='float64')
+elif(distance == 'manhattan'):
+    corr_mat = np.array(normalize(np.abs(sklearn.metrics.pairwise.manhattan_distances(X_train.T,X_train.T)), norm='l1', axis=1),dtype='float64')
+print(corr_mat.shape)
+
+# Calculate Q matrix using random walk
+P = corr_mat
+Q = np.eye(corr_mat.shape[0])
+Q = Q + P
+for i in range(k-2):
+    P = np.matmul(P,P)
+    Q = Q + P
+    
+corr_mat = Q    
 graph_mat = np.argsort(corr_mat,1)[:,-num_neighbors:]
+cor_graph_mat = np.sort(corr_mat,1)[:,-num_neighbors:]
 
 print('graph_mat shape:(%d,%d)'%(graph_mat.shape))
 
@@ -105,7 +131,8 @@ print('graph_mat shape:(%d,%d)'%(graph_mat.shape))
 g_model = Sequential()
 g_model.add(GraphConv(filters=filters_1, neighbors_ix_mat = graph_mat, 
                       num_neighbors=num_neighbors, activation='relu', 
-                      input_shape=(X_train.shape[1],1)))
+                      input_shape=(X_train.shape[1],1),
+                      correlation_graph_mat = cor_graph_mat))
 g_model.add(Dropout(0.25))
 g_model.add(Flatten())
 g_model.add(Dense(1, kernel_regularizer=l2(0.01)))
@@ -137,7 +164,8 @@ print('1-Conv R squared = %.5f'%results['g'][-1])
 g_fc_model = Sequential()
 g_fc_model.add(GraphConv(filters=filters_1, neighbors_ix_mat = graph_mat, 
                          num_neighbors=num_neighbors, activation='relu', 
-                         input_shape=(X_train.shape[1],1)))
+                         input_shape=(X_train.shape[1],1),
+                         correlation_graph_mat = cor_graph_mat))
 g_fc_model.add(Dropout(0.25))
 g_fc_model.add(Flatten())
 g_fc_model.add(Dense(num_hidden_2, activation='relu', kernel_regularizer=l2(0.01),))
@@ -200,10 +228,12 @@ print('FC-FC R squared = %.5f'%(results['fc_fc'][-1]))
 g_g_fc_model = Sequential()
 g_g_fc_model.add(GraphConv(filters=filters_1, neighbors_ix_mat = graph_mat, 
                            num_neighbors=num_neighbors, activation='relu', 
-                           input_shape=(X_train.shape[1],1)))
+                           input_shape=(X_train.shape[1],1),
+                           correlation_graph_mat = cor_graph_mat))
 g_g_fc_model.add(Dropout(0.25))
 g_g_fc_model.add(GraphConv(filters=filters_2, neighbors_ix_mat = graph_mat, 
-                           num_neighbors=num_neighbors, activation='relu'))
+                           num_neighbors=num_neighbors, activation='relu',
+                           correlation_graph_mat = cor_graph_mat))
 g_g_fc_model.add(Dropout(0.25))
 g_g_fc_model.add(Flatten())
 g_g_fc_model.add(Dense(num_hidden_1,activation='relu', kernel_regularizer=l2(0.01),))

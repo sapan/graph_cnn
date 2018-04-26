@@ -71,7 +71,8 @@ class GraphConv(Layer):
     def __init__(self, 
                  filters, 
                  num_neighbors,
-                 neighbors_ix_mat, 
+                 neighbors_ix_mat,
+                 correlation_graph_mat, 
                  activation=None,
                  use_bias=True,
                  kernel_initializer='glorot_uniform',
@@ -94,7 +95,7 @@ class GraphConv(Layer):
         self.filters = filters     
         self.num_neighbors = num_neighbors
         self.neighbors_ix_mat = neighbors_ix_mat
-        
+        self.correlation_graph_mat = correlation_graph_mat
         self.activation = activations.get(activation)
         self.use_bias = use_bias
         self.kernel_initializer = initializers.get(kernel_initializer)
@@ -104,8 +105,8 @@ class GraphConv(Layer):
         self.activity_regularizer = regularizers.get(activity_regularizer)
         self.kernel_constraint = constraints.get(kernel_constraint)
         self.bias_constraint = constraints.get(bias_constraint)
-        self.input_spec = InputSpec(ndim=3)      
-
+        self.input_spec = InputSpec(ndim=3)
+        
     def build(self, input_shape):
         input_dim = input_shape[2]
         kernel_shape = (self.num_neighbors, input_dim, self.filters)
@@ -156,6 +157,10 @@ class GraphConv(Layer):
         #print(self.neighbors_ix_mat)
         x_expanded = tf.gather(x, self.neighbors_ix_mat, axis=1)
         #x_expanded = x[:,self.neighbors_ix_mat,:]
+        correlation_graph_mat_expanded = tf.tile(self.correlation_graph_mat,[tf.shape(x)[0],1])
+        correlation_graph_mat_expanded = tf.cast(tf.reshape(correlation_graph_mat_expanded,[tf.shape(x)[0],tf.shape(x)[1],tf.shape(x_expanded)[2],1]),tf.float32)
+        x_expanded = tf.multiply(x_expanded,correlation_graph_mat_expanded)
+        
         output = tf.tensordot(x_expanded, self.kernel, [[2,3],[0,1]])   
         if self.use_bias:
             output += tf.reshape(self.bias, (1, 1, self.filters))
