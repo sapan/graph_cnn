@@ -1,0 +1,62 @@
+Random seed = 1984
+Training data shape:(6148,2153)
+Test data shape:(2045,2153)
+graph_mat shape:(2153,5)
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+graph_conv_1 (GraphConv)     (None, 2153, 10)          60        
+_________________________________________________________________
+dropout_1 (Dropout)          (None, 2153, 10)          0         
+_________________________________________________________________
+flatten_1 (Flatten)          (None, 21530)             0         
+_________________________________________________________________
+dense_1 (Dense)              (None, 1)                 21531     
+_________________________________________________________________
+dropout_2 (Dropout)          (None, 1)                 0         
+=================================================================
+Total params: 21,591
+Trainable params: 21,591
+Non-trainable params: 0
+_________________________________________________________________
+Epoch: 0, R squared: 0.10811
+Epoch: 1, R squared: 0.12742
+Epoch: 2, R squared: 0.14612
+Epoch: 3, R squared: 0.16574
+Epoch: 4, R squared: 0.18008
+Epoch: 5, R squared: 0.19256
+Epoch: 6, R squared: 0.20330
+Epoch: 7, R squared: 0.21049
+Epoch: 8, R squared: 0.21724
+Epoch: 9, R squared: 0.22184
+Epoch: 10, R squared: 0.22354
+Epoch: 11, R squared: 0.22577
+Epoch: 12, R squared: 0.22790
+Epoch: 13, R squared: 0.23120
+Epoch: 14, R squared: 0.22990
+Epoch: 15, R squared: 0.23241
+Epoch: 16, R squared: 0.23129
+Epoch: 17, R squared: 0.23275
+Epoch: 18, R squared: 0.23318
+Epoch: 19, R squared: 0.23294
+Epoch: 20, R squared: 0.23359
+Epoch: 21, R squared: 0.23265
+Epoch: 22, R squared: 0.23422
+Epoch: 23, R squared: 0.23234
+Epoch: 24, R squared: 0.23675
+Epoch: 25, R squared: 0.23376
+Epoch: 26, R squared: 0.23606
+Epoch: 27, R squared: 0.23578
+Epoch: 28, R squared: 0.23454
+Epoch: 29, R squared: 0.23758
+Epoch: 30, R squared: 0.23324
+Epoch: 31, R squared: 0.24078
+Epoch: 32, R squared: 0.23801
+Epoch: 33, R squared: 0.23126
+Epoch: 34, R squared: 0.23375
+Epoch: 35, R squared: 0.24109
+Epoch: 36, R squared: 0.23900
+Epoch: 37, R squared: 0.24045
+Epoch: 38, R squared: 0.24367
+Epoch: 39, R squared: 0.24398
+1-Conv R squared = 0.24398

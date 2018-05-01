@@ -4,17 +4,15 @@ from keras.engine.topology import Layer
 from keras.layers.core import *
 
 import tensorflow as tf
-#tf.set_random_seed(1984)
 #from keras.backend.cntk_backend import dtype
 
-class GraphConv(Layer):
-    '''Convolution operator for graphs.
+class DiffusionConv(Layer):
+    '''Diffusion Convolutional Neural Network.
 
-    REQUIRES THEANO BACKEND (line 130).
+    REQUIRES TENSORFLOW BACKEND (line 130).
 	
     Implementation reduce the convolution to tensor product, 
-    as described in "A generalization of Convolutional Neural 
-    Networks to Graph-Structured Data".  
+    as described in "Diffusion-Convolutional Neural Networks".  
 
     When using this layer as the first layer in a model,
     provide an `input_shape` argument
@@ -24,11 +22,12 @@ class GraphConv(Layer):
     # Arguments
         filters: Number of convolution kernels to use
             (dimensionality of the output).
-	   num_neighbors: the number of neighbors the convolution
-            would be applied on (analogue to filter length)
-        neighbors_ix_mat: A matrix with dimensions
-            (variables, num_neighbors) where the entry [Q]_ij
-            denotes for the i's variable the j's closest neighbor.
+	num_hops: the number of hops of the diffusion (analogue to filter length)
+            it determines the size of the weight parameters of the convolution
+        prob_transition_mat: A tensor with dimensions
+            (variables, num_hops, variables) where the entry [P]_ihj
+            denotes for the 'i'th variable, similarity with 'j'th variable
+            according to 'h'th hop.
         activation: name of activation function to use
             (see [activations](../activations.md)),
             or alternatively, elementwise Theano function.
@@ -71,8 +70,8 @@ class GraphConv(Layer):
         
     def __init__(self, 
                  filters, 
-                 num_neighbors,
-                 neighbors_ix_mat, 
+                 num_hops,
+                 prob_transition_mat,
                  activation=None,
                  use_bias=True,
                  kernel_initializer='glorot_uniform',
@@ -81,20 +80,20 @@ class GraphConv(Layer):
                  bias_regularizer=None, 
                  activity_regularizer=None,
                  kernel_constraint=None,
-                 bias_constraint=None,                 
+                 bias_constraint=None, 
                  **kwargs):
 
         if K.backend() != 'tensorflow':
-            raise Exception("GraphConv with Tensorflow Backend.")
+            raise Exception("DiffusionConv with Tensorflow Backend.")
             
         if 'input_shape' not in kwargs and 'input_dim' in kwargs:
            kwargs['input_shape'] = (kwargs.pop('input_dim'),)
            
-        super(GraphConv, self).__init__(**kwargs)        
+        super(DiffusionConv, self).__init__(**kwargs)        
       
         self.filters = filters     
-        self.num_neighbors = num_neighbors
-        self.neighbors_ix_mat = neighbors_ix_mat
+        self.num_hops = num_hops
+        self.prob_transition_mat = prob_transition_mat
         self.activation = activations.get(activation)
         self.use_bias = use_bias
         self.kernel_initializer = initializers.get(kernel_initializer)
@@ -108,7 +107,7 @@ class GraphConv(Layer):
         
     def build(self, input_shape):
         input_dim = input_shape[2]
-        kernel_shape = (self.num_neighbors, input_dim, self.filters)
+        kernel_shape = (self.num_hops, input_dim, self.filters)
  
         self.kernel = self.add_weight(shape=kernel_shape,
                                       initializer=self.kernel_initializer,
@@ -126,9 +125,12 @@ class GraphConv(Layer):
         self.built = True
                        
     def call(self, x):
-        x_expanded = tf.gather(x, self.neighbors_ix_mat, axis=1)
-        #Tensor dot implementation with tensorflow
-        output = tf.tensordot(x_expanded, self.kernel, [[2,3],[0,1]])   
+#        x_expanded = tf.gather(x, self.neighbors_ix_mat, axis=1)
+#        #Tensor dot implementation with tensorflow
+#        output = tf.tensordot(x_expanded, self.kernel, [[2,3],[0,1]])
+        soft_mask_mult = tf.tensordot(x, self.prob_transition_mat, axes=[[1],[2]])
+        soft_mask_mult = tf.transpose(soft_mask_mult, perm=[0,2,3,1])
+        output = tf.tensordot(soft_mask_mult, self.kernel, axes=[[2,3],[0,1]])
         if self.use_bias:
             output += tf.reshape(self.bias, (1, 1, self.filters))
         
