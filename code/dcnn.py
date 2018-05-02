@@ -114,6 +114,12 @@ class DiffusionConv(Layer):
                                       name='kernel',
                                       regularizer=self.kernel_regularizer,
                                       constraint=self.kernel_constraint)
+        sim_kernel_shape = (self.num_hops, input_shape[1])
+        self.sim_kernel = self.add_weight(shape=sim_kernel_shape,
+                                      initializer=self.kernel_initializer,
+                                      name='kernel',
+                                      regularizer=self.kernel_regularizer,
+                                      constraint=self.kernel_constraint)
         if self.use_bias:
             self.bias = self.add_weight(shape=(self.filters,),
                                         initializer=self.bias_initializer,
@@ -128,6 +134,9 @@ class DiffusionConv(Layer):
 #        x_expanded = tf.gather(x, self.neighbors_ix_mat, axis=1)
 #        #Tensor dot implementation with tensorflow
 #        output = tf.tensordot(x_expanded, self.kernel, [[2,3],[0,1]])
+
+        # Multiply prob_transition_mat with similarity kernel
+        self.prob_transition_mat = tf.multiply(self.prob_transition_mat, self.sim_kernel)
         soft_mask_mult = tf.tensordot(x, self.prob_transition_mat, axes=[[1],[2]])
         soft_mask_mult = tf.transpose(soft_mask_mult, perm=[0,2,3,1])
         output = tf.tensordot(soft_mask_mult, self.kernel, axes=[[2,3],[0,1]])

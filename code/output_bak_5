@@ -1,0 +1,129 @@
+Using TensorFlow backend.
+Random seed = 1984
+Training data shape:(6148,2153)
+Test data shape:(2045,2153)
+('Shape of Prob_transition_tensor:', (2153, 3, 2153))
+graph_mat shape:(2153,5)
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+graph_conv_1 (GraphConv)     (None, 2153, 10)          60        
+_________________________________________________________________
+dropout_1 (Dropout)          (None, 2153, 10)          0         
+_________________________________________________________________
+flatten_1 (Flatten)          (None, 21530)             0         
+_________________________________________________________________
+dense_1 (Dense)              (None, 1)                 21531     
+_________________________________________________________________
+dropout_2 (Dropout)          (None, 1)                 0         
+=================================================================
+Total params: 21,591
+Trainable params: 21,591
+Non-trainable params: 0
+_________________________________________________________________
+2018-05-02 12:10:56.585734: I tensorflow/core/platform/cpu_feature_guard.cc:140] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2018-05-02 12:10:57.365068: E tensorflow/stream_executor/cuda/cuda_driver.cc:406] failed call to cuInit: CUDA_ERROR_NO_DEVICE
+2018-05-02 12:10:57.365124: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:158] retrieving CUDA diagnostic information for host: blossom
+2018-05-02 12:10:57.365136: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:165] hostname: blossom
+2018-05-02 12:10:57.365206: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:189] libcuda reported version is: 390.42.0
+2018-05-02 12:10:57.365251: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:193] kernel reported version is: 390.42.0
+2018-05-02 12:10:57.365262: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:300] kernel version seems to match DSO: 390.42.0
+Epoch: 0, R squared: 0.10810
+Epoch: 1, R squared: 0.12739
+Epoch: 2, R squared: 0.14610
+Epoch: 3, R squared: 0.16571
+Epoch: 4, R squared: 0.18005
+Epoch: 5, R squared: 0.19253
+Epoch: 6, R squared: 0.20327
+Epoch: 7, R squared: 0.21047
+Epoch: 8, R squared: 0.21722
+Epoch: 9, R squared: 0.22183
+Epoch: 10, R squared: 0.22352
+Epoch: 11, R squared: 0.22575
+Epoch: 12, R squared: 0.22789
+Epoch: 13, R squared: 0.23119
+Epoch: 14, R squared: 0.22988
+Epoch: 15, R squared: 0.23239
+Epoch: 16, R squared: 0.23126
+Epoch: 17, R squared: 0.23272
+Epoch: 18, R squared: 0.23314
+Epoch: 19, R squared: 0.23289
+Epoch: 20, R squared: 0.23353
+Epoch: 21, R squared: 0.23260
+Epoch: 22, R squared: 0.23416
+Epoch: 23, R squared: 0.23229
+Epoch: 24, R squared: 0.23669
+Epoch: 25, R squared: 0.23370
+Epoch: 26, R squared: 0.23600
+Epoch: 27, R squared: 0.23571
+Epoch: 28, R squared: 0.23446
+Epoch: 29, R squared: 0.23750
+Epoch: 30, R squared: 0.23317
+Epoch: 31, R squared: 0.24072
+Epoch: 32, R squared: 0.23796
+Epoch: 33, R squared: 0.23119
+Epoch: 34, R squared: 0.23369
+Epoch: 35, R squared: 0.24102
+Epoch: 36, R squared: 0.23894
+Epoch: 37, R squared: 0.24039
+Epoch: 38, R squared: 0.24360
+Epoch: 39, R squared: 0.24391
+1-Conv R squared = 0.24391
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+diffusion_conv_1 (DiffusionC (None, 2153, 10)          6499      
+_________________________________________________________________
+dropout_3 (Dropout)          (None, 2153, 10)          0         
+_________________________________________________________________
+flatten_2 (Flatten)          (None, 21530)             0         
+_________________________________________________________________
+dense_2 (Dense)              (None, 1)                 21531     
+_________________________________________________________________
+dropout_4 (Dropout)          (None, 1)                 0         
+=================================================================
+Total params: 28,030
+Trainable params: 28,030
+Non-trainable params: 0
+_________________________________________________________________
+Epoch: 0, R squared: 0.13297
+Epoch: 1, R squared: 0.14790
+Epoch: 2, R squared: 0.15364
+Epoch: 3, R squared: 0.15728
+Epoch: 4, R squared: 0.15823
+Epoch: 5, R squared: 0.15999
+Epoch: 6, R squared: 0.16491
+Epoch: 7, R squared: 0.17550
+Epoch: 8, R squared: 0.18792
+Epoch: 9, R squared: 0.20087
+Epoch: 10, R squared: 0.21141
+Epoch: 11, R squared: 0.22078
+Epoch: 12, R squared: 0.22820
+Epoch: 13, R squared: 0.23450
+Epoch: 14, R squared: 0.23943
+Epoch: 15, R squared: 0.24437
+Epoch: 16, R squared: 0.24817
+Epoch: 17, R squared: 0.25150
+Epoch: 18, R squared: 0.25427
+Epoch: 19, R squared: 0.25581
+Epoch: 20, R squared: 0.25670
+Epoch: 21, R squared: 0.25897
+Epoch: 22, R squared: 0.25974
+Epoch: 23, R squared: 0.25943
+Epoch: 24, R squared: 0.25792
+Epoch: 25, R squared: 0.25852
+Epoch: 26, R squared: 0.25727
+Epoch: 27, R squared: 0.25697
+Epoch: 28, R squared: 0.25588
+Epoch: 29, R squared: 0.25417
+Epoch: 30, R squared: 0.25473
+Epoch: 31, R squared: 0.25292
+Epoch: 32, R squared: 0.25331
+Epoch: 33, R squared: 0.25354
+Epoch: 34, R squared: 0.25278
+Epoch: 35, R squared: 0.25223
+Epoch: 36, R squared: 0.25263
+Epoch: 37, R squared: 0.25120
+Epoch: 38, R squared: 0.25253
+Epoch: 39, R squared: 0.25194
+1-Conv R squared = 0.25194
